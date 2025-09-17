@@ -5,10 +5,12 @@ import com.example.GreenCareAI.dto.request.PostRequest;
 import com.example.GreenCareAI.dto.request.CommentRequest;
 import com.example.GreenCareAI.entity.Comment;
 import com.example.GreenCareAI.entity.Post;
+import com.example.GreenCareAI.security.CustomUserDetails;
 import com.example.GreenCareAI.service.CommunityService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,14 +35,16 @@ public class CommunityController {
         return ResponseEntity.ok(communityService.getPostsByUser(userId));
     }
 
-    // POST: Tạo post mới
     @PostMapping("/posts")
     public ResponseEntity<Post> createPost(
-            @RequestParam Long userId,
-            @RequestBody @Valid PostRequest request
+            @RequestBody @Valid PostRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return ResponseEntity.ok(communityService.createPost(userId, request));
+        return ResponseEntity.ok(
+                communityService.createPost(userDetails.getId(), request)
+        );
     }
+
 
     // GET: Lấy comment theo post
     @GetMapping("/posts/{postId}/comments")
@@ -48,13 +52,15 @@ public class CommunityController {
         return ResponseEntity.ok(communityService.getCommentsByPost(postId));
     }
 
-    // POST: Thêm comment vào post
     @PostMapping("/posts/{postId}/comments")
     public ResponseEntity<Comment> addComment(
             @PathVariable Long postId,
-            @RequestParam Long userId,
-            @RequestBody @Valid CommentRequest request
+            @RequestBody @Valid CommentRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        Long userId = userDetails.getId();
         return ResponseEntity.ok(communityService.addComment(userId, postId, request));
     }
+
+
 }

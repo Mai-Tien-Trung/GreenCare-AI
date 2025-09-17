@@ -24,6 +24,7 @@ public class Comment {
 
     @ManyToOne
     @JoinColumn(name = "post_id")
+
     private Post post;   // comment thuộc post nào
 
     private LocalDateTime createdAt = LocalDateTime.now();

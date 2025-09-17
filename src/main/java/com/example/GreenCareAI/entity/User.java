@@ -2,6 +2,7 @@ package com.example.GreenCareAI.entity;
 
 
 import com.example.GreenCareAI.enums.Role;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,10 +21,10 @@ public class User {
     private Long id;
 
     @Column(unique = true, nullable = false, length = 50)
-    private String username;   // ✅ đăng nhập bằng username
+    private String username;
 
     @Column(unique = true, nullable = false)
-    private String email;      // vẫn giữ email để liên lạc, verify
+    private String email;
 
     @Column(nullable = false)
     private String password;
@@ -32,8 +33,10 @@ public class User {
     @Column(nullable = false)
     private Role role;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Post> posts = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Comment> comments = new ArrayList<>();
 }
