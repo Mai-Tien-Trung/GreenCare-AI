@@ -1,15 +1,13 @@
 package com.example.GreenCareAI.controller;
 
-
-
-
-
 import com.example.GreenCareAI.dto.request.LoginRequest;
 import com.example.GreenCareAI.dto.request.RegisterRequest;
 import com.example.GreenCareAI.entity.User;
 import com.example.GreenCareAI.enums.Role;
 import com.example.GreenCareAI.repository.UserRepository;
 import com.example.GreenCareAI.security.JwtService;
+import com.example.GreenCareAI.service.LoginHistoryService;   // ✅ Thêm dòng này
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,17 +15,20 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;   // ✅ Thêm dòng này
+
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
-
 public class AuthController {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+
+    private final LoginHistoryService loginHistoryService;  // ✅ Inject service
 
     // ✅ Đăng ký
     @PostMapping("/register")
@@ -49,7 +50,7 @@ public class AuthController {
 
         String token = jwtService.generateToken(user);
         return ResponseEntity.ok().body(
-                java.util.Map.of(
+                Map.of(
                         "message", "Register thành công",
                         "token", token,
                         "username", user.getUsername(),
@@ -58,6 +59,7 @@ public class AuthController {
         );
     }
 
+    // ✅ Login
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         authenticationManager.authenticate(
@@ -69,8 +71,11 @@ public class AuthController {
 
         String token = jwtService.generateToken(user);
 
+        // ✅ Ghi log login
+        loginHistoryService.saveLogin(user);
+
         return ResponseEntity.ok().body(
-                java.util.Map.of(
+                Map.of(
                         "message", "Login success",
                         "token", token,
                         "username", user.getUsername()
