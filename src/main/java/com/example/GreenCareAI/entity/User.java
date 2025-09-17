@@ -21,10 +21,10 @@ public class User {
     private Long id;
 
     @Column(unique = true, nullable = false, length = 50)
-    private String username;
+    private String username;   // ✅ đăng nhập bằng username
 
     @Column(unique = true, nullable = false)
-    private String email;
+    private String email;      // vẫn giữ email để liên lạc, verify
 
     @Column(nullable = false)
     private String password;
