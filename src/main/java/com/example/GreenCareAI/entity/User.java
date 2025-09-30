@@ -27,6 +27,7 @@ public class User {
     private String email;      // vẫn giữ email để liên lạc, verify
 
     @Column(nullable = false)
+    @JsonIgnore
     private String password;
 
     @Enumerated(EnumType.STRING)
@@ -39,4 +40,16 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<Comment> comments = new ArrayList<>();
+    @Column
+    private String phone;
+
+    @Column
+    private String address;
+
+    @Column
+    private String firstName;
+
+    @Column
+    private String lastName;
+
 }
