@@ -61,6 +61,10 @@ public class CommunityController {
         Long userId = userDetails.getId();
         return ResponseEntity.ok(communityService.addComment(userId, postId, request));
     }
+    @GetMapping("/posts/count-last30days")
+    public ResponseEntity<Long> countPostsLast30Days() {
+        return ResponseEntity.ok(communityService.countPostsLast30Days());
+    }
 
 
 }

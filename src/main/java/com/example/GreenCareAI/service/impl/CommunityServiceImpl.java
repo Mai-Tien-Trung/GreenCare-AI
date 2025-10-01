@@ -12,6 +12,7 @@ import com.example.GreenCareAI.service.CommunityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -68,4 +69,10 @@ public class CommunityServiceImpl implements CommunityService {
 
         return commentRepository.save(comment);
     }
+    @Override
+    public long countPostsLast30Days() {
+        LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
+        return postRepository.countByCreatedAtAfter(thirtyDaysAgo);
+    }
+
 }

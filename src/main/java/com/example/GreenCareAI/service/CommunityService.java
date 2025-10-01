@@ -13,5 +13,7 @@ public interface CommunityService {
     Post createPost(Long userId, PostRequest dto);
     List<Comment> getCommentsByPost(Long postId);
     Comment addComment(Long userId, Long postId, CommentRequest dto);
+    long countPostsLast30Days();
+
 }
 
