@@ -9,12 +9,14 @@ import org.springframework.web.client.RestTemplate;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 @Service
 public class PlantDiseaseService {
 
     private final String hfToken = "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";
-    private final String hfApiUrl = "https://api-inference.huggingface.co/models/linkanjarad/mobilenet_v2_1.0_224-plant-disease-identification";
+    private final String hfApiUrl =
+            "https://api-inference.huggingface.co/models/linkanjarad/mobilenet_v2_1.0_224-plant-disease-identification";
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -26,9 +28,22 @@ public class PlantDiseaseService {
         headers.setContentType(MediaType.IMAGE_JPEG);
         headers.setBearerAuth(hfToken);
 
-        HttpEntity<byte[]> entity = new HttpEntity<>(imageBytes, headers);
-        ResponseEntity<String> response = restTemplate.exchange(hfApiUrl, HttpMethod.POST, entity, String.class);
+        // ✅ Fix: chỉ nhận JSON response từ Hugging Face
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
 
+        HttpEntity<byte[]> entity = new HttpEntity<>(imageBytes, headers);
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                hfApiUrl,
+                HttpMethod.POST,
+                entity,
+                String.class
+        );
+
+        System.out.println("✅ Response status: " + response.getStatusCode());
+        System.out.println("✅ Response body: " + response.getBody());
+
+        // Parse JSON kết quả
         JsonNode root = objectMapper.readTree(response.getBody());
         if (root.isArray() && root.size() > 0) {
             JsonNode best = root.get(0);
