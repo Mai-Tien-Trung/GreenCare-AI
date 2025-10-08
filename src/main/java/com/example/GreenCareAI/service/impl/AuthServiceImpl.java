@@ -1,5 +1,6 @@
 package com.example.GreenCareAI.service.impl;
 
+
 import com.example.GreenCareAI.dto.request.LoginRequest;
 import com.example.GreenCareAI.dto.request.RegisterRequest;
 import com.example.GreenCareAI.entity.User;
@@ -8,6 +9,7 @@ import com.example.GreenCareAI.repository.UserRepository;
 import com.example.GreenCareAI.security.JwtService;
 import com.example.GreenCareAI.service.AuthService;
 import com.example.GreenCareAI.service.LoginHistoryService;
+import com.example.GreenCareAI.service.SubscriptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,6 +28,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final LoginHistoryService loginHistoryService;
+    private final SubscriptionService subscriptionService; // ✅ Thêm dòng này
 
     @Override
     public ResponseEntity<?> register(RegisterRequest request) {
@@ -44,6 +47,9 @@ public class AuthServiceImpl implements AuthService {
 
         userRepository.save(user);
 
+        // 🟢 Tạo Free Subscription cho user mới
+        subscriptionService.createFreeSubscriptionByUsername(user.getUsername());
+
         String token = jwtService.generateToken(user);
         return ResponseEntity.ok().body(
                 Map.of(
@@ -55,26 +61,26 @@ public class AuthServiceImpl implements AuthService {
         );
     }
 
-    @Override
-    public ResponseEntity<?> login(LoginRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
-        );
+        @Override
+        public ResponseEntity<?> login(LoginRequest request) {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+            );
 
-        User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("User không tồn tại"));
+            User user = userRepository.findByUsername(request.getUsername())
+                    .orElseThrow(() -> new RuntimeException("User không tồn tại"));
 
-        String token = jwtService.generateToken(user);
+            String token = jwtService.generateToken(user);
 
-        // ✅ Ghi log login
-        loginHistoryService.saveLogin(user);
+            // ✅ Ghi log login
+            loginHistoryService.saveLogin(user);
 
-        return ResponseEntity.ok().body(
-                Map.of(
-                        "message", "Login success",
-                        "token", token,
-                        "username", user.getUsername()
-                )
-        );
+            return ResponseEntity.ok().body(
+                    Map.of(
+                            "message", "Login success",
+                            "token", token,
+                            "username", user.getUsername()
+                    )
+            );
+        }
     }
-}
