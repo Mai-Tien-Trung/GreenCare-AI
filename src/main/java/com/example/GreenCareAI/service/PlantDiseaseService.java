@@ -14,7 +14,7 @@ import java.util.List;
 @Service
 public class PlantDiseaseService {
 
-    private final String hfToken = "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";
+    private final String hfToken = "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";
     private final String hfApiUrl =
             "https://api-inference.huggingface.co/models/linkanjarad/mobilenet_v2_1.0_224-plant-disease-identification";
 
@@ -28,7 +28,6 @@ public class PlantDiseaseService {
         headers.setContentType(MediaType.IMAGE_JPEG);
         headers.setBearerAuth(hfToken);
 
-        // ✅ Fix: chỉ nhận JSON response từ Hugging Face
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
 
         HttpEntity<byte[]> entity = new HttpEntity<>(imageBytes, headers);
