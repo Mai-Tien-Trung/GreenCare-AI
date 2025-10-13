@@ -27,10 +27,9 @@ public class PlantDiseaseController {
             @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal UserDetails userDetails
     ) throws IOException {
-        // 🟡 Trừ lượt trước khi gọi AI (nếu là Free)
         subscriptionService.deductScanByUsername(userDetails.getUsername());
 
-        // ✅ Gọi AI
+
         File tempFile = File.createTempFile("leaf-", ".jpg");
         file.transferTo(tempFile);
 
