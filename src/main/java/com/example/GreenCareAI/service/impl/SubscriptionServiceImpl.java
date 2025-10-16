@@ -9,10 +9,12 @@ import com.example.GreenCareAI.repository.SubscriptionRepository;
 import com.example.GreenCareAI.repository.UserRepository;
 import com.example.GreenCareAI.service.SubscriptionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-
+@Transactional
 @Service
 @RequiredArgsConstructor
 public class SubscriptionServiceImpl implements SubscriptionService {
@@ -77,21 +79,36 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 .findByUserIdAndStatus(user.getId(), SubscriptionStatus.ACTIVE)
                 .orElseThrow(() -> new RuntimeException("No active subscription"));
 
-        // Chỉ trừ nếu có giới hạn lượt (Free)
-        if (sub.getPlan().getMaxScans() != null && sub.getRemainingScans() > 0) {
-            sub.setRemainingScans(sub.getRemainingScans() - 1);
-            if (sub.getRemainingScans() <= 0) {
-                sub.setStatus(SubscriptionStatus.COMPLETED);
-            }
-        }
-
-        // Nếu hết hạn
+        //  1. Kiểm tra hết hạn
         if (LocalDate.now().isAfter(sub.getEndDate())) {
             sub.setStatus(SubscriptionStatus.EXPIRED);
+            subscriptionRepository.save(sub);
+            throw new RuntimeException("Your subscription has expired. Please renew or upgrade.");
+        }
+
+        //  2. Nếu là Premium (Unlimited scans)
+        if (sub.getPlan().getMaxScans() == null) {
+            return sub; // Không trừ lượt, vẫn active
+        }
+
+        //  3. Nếu là gói có giới hạn lượt
+        if (sub.getRemainingScans() <= 0) {
+            sub.setStatus(SubscriptionStatus.COMPLETED);
+            subscriptionRepository.save(sub);
+            throw new RuntimeException("You have used all available scans for this plan.");
+        }
+
+        //  4. Trừ lượt
+        sub.setRemainingScans(sub.getRemainingScans() - 1);
+
+        // 5. Nếu vừa hết lượt sau khi trừ
+        if (sub.getRemainingScans() == 0) {
+            sub.setStatus(SubscriptionStatus.COMPLETED);
         }
 
         return subscriptionRepository.save(sub);
     }
+
 
     @Override
     public Subscription getActiveSubscriptionByUsername(String username) {
@@ -101,4 +118,19 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         return subscriptionRepository.findByUserIdAndStatus(user.getId(), SubscriptionStatus.ACTIVE)
                 .orElseThrow(() -> new RuntimeException("No active subscription"));
     }
+    @Scheduled(cron = "0 0 0 * * ?") // chạy mỗi ngày lúc 00:00
+    public void expireOldSubscriptions() {
+        LocalDate today = LocalDate.now();
+
+        // Lấy toàn bộ sub đang active
+        var activeSubs = subscriptionRepository.findByStatus(SubscriptionStatus.ACTIVE);
+
+        for (Subscription sub : activeSubs) {
+            if (today.isAfter(sub.getEndDate())) {
+                sub.setStatus(SubscriptionStatus.EXPIRED);
+                subscriptionRepository.save(sub);
+                System.out.println("🔔 Subscription expired for user: " + sub.getUser().getUsername());
+            }
+        }
+        }
 }
