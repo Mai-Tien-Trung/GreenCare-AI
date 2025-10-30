@@ -14,7 +14,7 @@ import java.util.List;
 @Service
 public class PlantDiseaseService {
 
-    private final String hfToken = "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";
+    private final String hfToken = "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";
     private final String hfApiUrl =
             "https://api-inference.huggingface.co/models/linkanjarad/mobilenet_v2_1.0_224-plant-disease-identification";
 
