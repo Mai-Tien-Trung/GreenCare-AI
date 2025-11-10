@@ -16,7 +16,7 @@ public class PlantDiseaseService {
 
     private final String hfToken = "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";
     private final String hfApiUrl =
-            "https://api-inference.huggingface.co/models/linkanjarad/mobilenet_v2_1.0_224-plant-disease-identification";
+            "https://router.huggingface.co/hf-inference/models/linkanjarad/mobilenet_v2_1.0_224-plant-disease-identification";
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
