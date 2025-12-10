@@ -11,9 +11,19 @@ import java.util.Optional;
 
 public interface SubscriptionRepository extends JpaRepository<Subscription, Long> {
     Optional<Subscription> findByUserIdAndStatus(Long userId, SubscriptionStatus status);
+
     @Query("SELECT s FROM Subscription s WHERE s.user.id = :userId AND s.status IN :statuses")
     Optional<Subscription> findByUserIdAndStatusIn(@Param("userId") Long userId,
-                                                   @Param("statuses") List<SubscriptionStatus> statuses);
+            @Param("statuses") List<SubscriptionStatus> statuses);
+
     List<Subscription> findByStatus(SubscriptionStatus status);
 
+    // Subscription statistics queries
+    Long countByStatus(SubscriptionStatus status);
+
+    @Query("SELECT COUNT(s) FROM Subscription s WHERE s.plan.name = :planName")
+    Long countByPlanName(@Param("planName") String planName);
+
+    @Query("SELECT COUNT(s) FROM Subscription s WHERE s.plan.name = :planName AND s.status = :status")
+    Long countByPlanNameAndStatus(@Param("planName") String planName, @Param("status") SubscriptionStatus status);
 }

@@ -6,6 +6,7 @@ import com.example.GreenCareAI.entity.User;
 import com.example.GreenCareAI.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,17 +28,18 @@ public class UserController {
     @PutMapping("/me")
     public ResponseEntity<User> updateProfile(
             @AuthenticationPrincipal(expression = "id") Long userId,
-            @RequestBody ProfileUpdateRequest request
-    ) {
+            @RequestBody ProfileUpdateRequest request) {
         return ResponseEntity.ok(userService.updateProfile(userId, request));
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UserResponse>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.ok("User deleted successfully");
